@@ -1,0 +1,31 @@
+#!/usr/local/bin/python3
+
+import os
+import sys
+
+if len(sys.argv) < 2:
+    print ("Usage: mkocaml <filename>\n")
+    exit ()
+
+project_name = sys.argv[1]
+
+makefile_str =  ("all: main\n\nmain:\n\to" +
+                "camlbuild -I src src/main.native\n\n" +
+                "clean:\n\tocamlbuild -clean\n")
+
+main_str = "let () = print_endline \"Hello world!\"\n"
+
+if os.path.exists (project_name):
+    print ("Cannot create project. Name already exists in directory")
+    exit ()
+
+# Create project directory
+os.makedirs(project_name + "/src")
+
+# Create Makefile
+with open (project_name + "/Makefile", "w") as make:
+    make.write (makefile_str)
+
+# Create Main file
+with open (project_name + "/src/main.ml", "w") as main:
+    main.write (main_str)
