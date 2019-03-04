@@ -9,11 +9,35 @@ if len(sys.argv) < 2:
 
 project_name = sys.argv[1]
 
-makefile_str =  ("all: main\n\nmain:\n\to" +
-                "camlbuild -I src src/main.native\n\n" +
-                "clean:\n\tocamlbuild -clean\n")
+makefile_str = (
+"""BUILD_PKGS=
+TEST_PKGS=oUnit
+ΝBUILD_FLAGS=-Is src
+DEBUG_FLAGS=-tag 'debug'
+TEST_FLAGS=-use-ocamlfind -pkgs ${TEST_PKGS} -Is src
+\nall: main
+\nmain:
+	ocamlbuild ${BUILD_FLAGS} src/main.native
+\ntest:
+	ocamlbuild ${TEST_FLAGS} tests/test.native --
+\nclean:
+	ocamlbuild -clean
+""")
 
 main_str = "let () = print_endline \"Hello world!\"\n"
+test_str = (
+"""
+open OUnit
+open Main
+\nlet example_test = fun () ->
+    assert_equal true true
+\nlet suite =
+  "Tests" >:::
+  [
+    "example test" >:: example_test;
+  ]
+\nlet _ = run_test_tt_main suite\n
+""")
 
 if os.path.exists (project_name):
     print ("Cannot create project. Name already exists in directory")
@@ -22,6 +46,9 @@ if os.path.exists (project_name):
 # Create project directory
 os.makedirs(project_name + "/src")
 
+# Create test directory
+os.makedirs(project_name + "/tests")
+
 # Create Makefile
 with open (project_name + "/Makefile", "w") as make:
     make.write (makefile_str)
@@ -29,3 +56,7 @@ with open (project_name + "/Makefile", "w") as make:
 # Create Main file
 with open (project_name + "/src/main.ml", "w") as main:
     main.write (main_str)
+
+# Create Test file
+with open (project_name + "/tests/test.ml", "w") as test:
+    test.write (test_str)
